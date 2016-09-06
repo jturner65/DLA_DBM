@@ -6,7 +6,7 @@ import java.util.ArrayList;
 //object on menu that can be modified via mouse input
 public class myGUIObj {
 	public int ID;
-	public Project4 p;
+	public cs7492Proj4 p;
 	public myVector start, end;				//x,y coords of start corner, end corner (z==0) for clickable region
 	public String name, dispText;
 
@@ -17,7 +17,7 @@ public class myGUIObj {
 	public double modMultBig, modMultSmall;						//multiplier for mod value
 	public int[] bxclr;
 	
-	public myGUIObj(Project4 _p,String _name, myVector _start, myVector _end, double _min, double _max, double _initVal, boolean _tAsInt, double _modMultS, double _modMultB) {
+	public myGUIObj(cs7492Proj4 _p,String _name, myVector _start, myVector _end, double _min, double _max, double _initVal, boolean _tAsInt, double _modMultS, double _modMultB) {
 		p=_p;
 		ID = p.GUIObjID++;
 		name = _name;
@@ -30,7 +30,7 @@ public class myGUIObj {
 		modMultSmall = _modMultS;
 		bxclr = p.getRndClr();
 	}	
-	public myGUIObj(Project4 _p, String _name,float _xst, float _yst, float _xend, float _yend, double _min, double _max, double _initVal, boolean _tAsInt, double _modMultS, double _modMultB) {this(_p,_name,new myVector(_xst,_yst,0), new myVector(_xend,_yend,0), _min, _max, _initVal, _tAsInt, _modMultS, _modMultB);	}
+	public myGUIObj(cs7492Proj4 _p, String _name,float _xst, float _yst, float _xend, float _yend, double _min, double _max, double _initVal, boolean _tAsInt, double _modMultS, double _modMultB) {this(_p,_name,new myVector(_xst,_yst,0), new myVector(_xend,_yend,0), _min, _max, _initVal, _tAsInt, _modMultS, _modMultB);	}
 	
 	public double getVal(){return val;}	
 	

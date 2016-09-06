@@ -9,7 +9,7 @@ import processing.opengl.PGL;
 import processing.opengl.PGraphics3D;
 
 public class my3DCanvas {
-	public Project4 p;
+	public cs7492Proj4 p;
 	
 	public myPoint drawEyeLoc,													//rx,ry,dz coords where eye was when drawing - set when first drawing and return eye to this location whenever trying to draw again - rx,ry,dz
 		scrCtrInWorld,mseLoc, eyeInWorld, oldDfCtr, mseIn3DBox, dfCtr;											//mouse location projected onto current drawing canvas
@@ -23,7 +23,7 @@ public class my3DCanvas {
 					drawSNorm;													//current normal of viewport/screen
 	
 	public int viewDimW, viewDimH;
-	public my3DCanvas(Project4 _p) {
+	public my3DCanvas(cs7492Proj4 _p) {
 		p = _p;
 		viewDimW = p.width; viewDimH = p.height;
 		initCanvasOneTime();	
@@ -68,7 +68,7 @@ public class my3DCanvas {
      	}
      	oldDfCtr = new myPoint(dfCtr);
      	dfCtr = getPlInterSect(mseLoc);
-     	mseIn3DBox = new myPoint(dfCtr.x+p.grid3DDimX/2.0f,dfCtr.y+p.grid3DDimY/2.0f,dfCtr.z+p.grid3DDimZ/2.0f);
+     	mseIn3DBox = new myPoint(dfCtr.x+p.gridDimX/2.0f,dfCtr.y+p.gridDimY/2.0f,dfCtr.z+p.gridDimZ/2.0f);
      	p.drawMseEdge();
 	}//buildCanvas()
 	
@@ -84,7 +84,7 @@ public class my3DCanvas {
 		PGL pgl = p.beginPGL();
 		FloatBuffer depthBuffer = ByteBuffer.allocateDirect(1 << 2).order(ByteOrder.nativeOrder()).asFloatBuffer();
 		int newMy = viewDimW - mY;
-		//pgl.readPixels(mX, grid3DDimY - mY - 1, 1, 1, PGL.DEPTH_COMPONENT, PGL.FLOAT, depthBuffer);
+		//pgl.readPixels(mX, gridDimY - mY - 1, 1, 1, PGL.DEPTH_COMPONENT, PGL.FLOAT, depthBuffer);
 		pgl.readPixels(mX, newMy, 1, 1, PGL.DEPTH_COMPONENT, PGL.FLOAT, depthBuffer);
 		float depthValue = depthBuffer.get(0);
 		depthBuffer.clear();
@@ -115,10 +115,10 @@ public class my3DCanvas {
 }
 //line bounded by verts - from a to b new myPoint(x,y,z); 
 class edge{ 
-	public Project4 p;
+	public cs7492Proj4 p;
 	public myPoint a, b;
-	public edge (Project4 _p){this(_p,new myPoint(0,0,0),new myPoint(0,0,0));}
-	public edge (Project4 _p, myPoint _a, myPoint _b){p = _p;a=new myPoint(_a); b=new myPoint(_b);}
+	public edge (cs7492Proj4 _p){this(_p,new myPoint(0,0,0),new myPoint(0,0,0));}
+	public edge (cs7492Proj4 _p, myPoint _a, myPoint _b){p = _p;a=new myPoint(_a); b=new myPoint(_b);}
 	public void set(float d, myVector dir, myPoint _p){	set( myPoint._add(_p,-d,new myVector(dir)), myPoint._add(_p,d,new myVector(dir)));} 
 	public void set(myPoint _a, myPoint _b){a=new myPoint(_a); b=new myPoint(_b);}
 	public myVector v(){return new myVector(b.x-a.x, b.y-a.y, b.z-a.z);}			//vector from a to b

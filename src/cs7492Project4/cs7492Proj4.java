@@ -1,23 +1,14 @@
 package cs7492Project4;
 
 import java.awt.event.KeyEvent;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.nio.*;
+import java.util.*;
+import java.util.concurrent.*;
 
 //import javax.media.opengl.GL2;
 
-import processing.core.PApplet;
-import processing.core.PMatrix3D;
-import processing.opengl.PGL;
-import processing.opengl.PGraphics3D;
-import processing.opengl.PGraphicsOpenGL;
+import processing.core.*;
+import processing.opengl.*;
 
 /**
  * cs7492 project 4 
@@ -25,7 +16,7 @@ import processing.opengl.PGraphicsOpenGL;
  * @author john turner DLA and DBM
  * 
  */ 
-public class Project4 extends PApplet {
+public class cs7492Proj4 extends PApplet {
 	//project4-specific variables
 	public String prjNmLong = "Project4", prjNmShrt = "Prj4";
 	
@@ -56,6 +47,16 @@ public class Project4 extends PApplet {
 	public float isoLevel = .7f;														//for marching cubes visualization
 	
 	public ExecutorService th_exec;
+
+	public static void main(String[] passedArgs) {
+	    String[] appletArgs = new String[] { "cs7492Project4.cs7492Proj4" };
+	    if (passedArgs != null) {
+	    	PApplet.main(PApplet.concat(appletArgs, passedArgs));
+	    } else {
+	    	PApplet.main(appletArgs);
+	    }
+	}
+	
 	public void settings(){
 		size((int)(displayWidth*.95f), (int)(displayHeight*.9f),P3D); noSmooth();
 	}
@@ -97,60 +98,83 @@ public class Project4 extends PApplet {
 	
 	public void draw(){	
 		cyclModCmp = (drawCount % guiObjs[gIDX_cycModDraw].valAsInt() == 0);		
-//		if(flags[useShader]) {				if(flags[solve3D]){		shdr_draw3D_solve3D();} else {	shdr_draw3D_solve2D();}}
-//		else {
-			if(flags[solve3D]){		draw3D_solve3D();} else {	draw3D_solve2D();}
-//			}
+
+		if((flags[runSim]) && (drawCount%scrMsgTime==0)){if(consoleStrings.size() != 0){consoleStrings.pollFirst();}}
+		pushMatrix();pushStyle();
+		drawSetup();																//initialize camera, lights and scene orientation and set up eye movement
+		if ((!cyclModCmp) || (flags[runSim])) {drawCount++;}			//needed to stop draw update so that pausing sim retains animation positions
+		if(flags[runSim]){	
+			//run 2d version of sim
+			slvrs[curSlvrIDX].calcCPU();			
+			if(flags[singleStep]){flags[runSim]=false;}
+		}
+		translate(focusTar.x,focusTar.y,focusTar.z);				//center of screen	
+		if (cyclModCmp) {		
+			background(bground[0],bground[1],bground[2],bground[3]);			
+			if(flags[solve3D]){		
+				pushMatrix();pushStyle();
+				translate(-gridDimX/2.0f,-gridDimY/2.0f,-gridDimZ/2.0f);				//center of screen		
+				slvrs[curSlvrIDX].draw3DCPU_Res();
+				popStyle();popMatrix();
+				drawAxes(100,3, new myPoint(-viewDimW/2.0f+40,0.0f,0.0f), 200, false); 		//for visualisation purposes and to show movement and location in otherwise empty scene
+				drawBoxBnds();
+			} else {	
+				slvrs[curSlvrIDX].draw2DCPU_Res();
+				drawAxes(100,3, new myPoint(-viewDimW/2.0f+40,0.0f,0.0f), 200, false); 		//for visualisation purposes and to show movement and location in otherwise empty scene
+			}
+		}
+		c.buildCanvas();
+		popStyle();popMatrix(); 
 		
 		drawUI();	
 		if (flags[saveAnim]) {	savePic();}
 	}//draw
 	//cpu calculations
-	public void draw3D_solve2D(){
-		if((flags[runSim]) && (drawCount%scrMsgTime==0)){if(consoleStrings.size() != 0){consoleStrings.pollFirst();}}
-		pushMatrix();pushStyle();
-		drawSetup();																//initialize camera, lights and scene orientation and set up eye movement
-		if ((!cyclModCmp) || (flags[runSim])) {drawCount++;}			//needed to stop draw update so that pausing sim retains animation positions
-		if(flags[runSim]){	
-			//run 2d version of sim
-			slvrs[curSlvrIDX].calcCPU();			
-			if(flags[singleStep]){flags[runSim]=false;}
-		}
-		translate(focusTar.x,focusTar.y,focusTar.z);				//center of screen		
-		if (cyclModCmp) {
-			background(bground[0],bground[1],bground[2],bground[3]);			
-			//draw 2d results
-			slvrs[curSlvrIDX].draw2DCPU_Res();
-			drawAxes(100,3, new myPoint(-viewDimW/2.0f+40,0.0f,0.0f), 200, false); 		//for visualisation purposes and to show movement and location in otherwise empty scene
-		}
-		c.buildCanvas();																//build drawing canvas based upon eye-to-scene vector		
-		popStyle();popMatrix(); 
-	}//draw3D_solve2D
+//	public void draw3D_solve2D(){
+////		if((flags[runSim]) && (drawCount%scrMsgTime==0)){if(consoleStrings.size() != 0){consoleStrings.pollFirst();}}
+////		pushMatrix();pushStyle();
+////		drawSetup();																//initialize camera, lights and scene orientation and set up eye movement
+////		if ((!cyclModCmp) || (flags[runSim])) {drawCount++;}			//needed to stop draw update so that pausing sim retains animation positions
+////		if(flags[runSim]){	
+////			//run 2d version of sim
+////			slvrs[curSlvrIDX].calcCPU();			
+////			if(flags[singleStep]){flags[runSim]=false;}
+////		}
+////		translate(focusTar.x,focusTar.y,focusTar.z);				//center of screen		
+//		//if (cyclModCmp) {
+////			background(bground[0],bground[1],bground[2],bground[3]);			
+//			//draw 2d results
+////			slvrs[curSlvrIDX].draw2DCPU_Res();
+////			drawAxes(100,3, new myPoint(-viewDimW/2.0f+40,0.0f,0.0f), 200, false); 		//for visualisation purposes and to show movement and location in otherwise empty scene
+//		//}
+//		//c.buildCanvas();																//build drawing canvas based upon eye-to-scene vector		
+////		popStyle();popMatrix(); 
+//	}//draw3D_solve2D
 	
-	//cpu calculations
-	public void draw3D_solve3D(){
-		if((flags[runSim]) && (drawCount%scrMsgTime==0)){if(consoleStrings.size() != 0){consoleStrings.pollFirst();}}
-		pushMatrix();pushStyle();
-		drawSetup();																//initialize camera, lights and scene orientation and set up eye movement
-		if ((!cyclModCmp) || (flags[runSim])) {drawCount++;}			//needed to stop draw update so that pausing sim retains animation positions
-		if(flags[runSim]){	
-			//run 2d version of sim
-			slvrs[curSlvrIDX].calcCPU();			
-			if(flags[singleStep]){flags[runSim]=false;}
-		}
-		translate(focusTar.x,focusTar.y,focusTar.z);				//center of screen		
-		if (cyclModCmp) {	
-			background(bground[0],bground[1],bground[2],bground[3]);	
-			pushMatrix();pushStyle();
-			translate(-grid3DDimX/2.0f,-grid3DDimY/2.0f,-grid3DDimZ/2.0f);				//center of screen		
-			slvrs[curSlvrIDX].draw3DCPU_Res();
-			popStyle();popMatrix();
-			drawAxes(100,3, new myPoint(-viewDimW/2.0f+40,0.0f,0.0f), 200, false); 		//for visualisation purposes and to show movement and location in otherwise empty scene
-		}
-		c.buildCanvas();																//build drawing canvas based upon eye-to-scene vector
-		drawBoxBnds();
-		popStyle();popMatrix(); 
-	}//draw3D	
+//	//cpu calculations
+//	public void draw3D_solve3D(){
+////		if((flags[runSim]) && (drawCount%scrMsgTime==0)){if(consoleStrings.size() != 0){consoleStrings.pollFirst();}}
+////		pushMatrix();pushStyle();
+////		drawSetup();																//initialize camera, lights and scene orientation and set up eye movement
+////		if ((!cyclModCmp) || (flags[runSim])) {drawCount++;}			//needed to stop draw update so that pausing sim retains animation positions
+////		if(flags[runSim]){	
+////			//run 3d version of sim
+////			slvrs[curSlvrIDX].calcCPU();			
+////			if(flags[singleStep]){flags[runSim]=false;}
+////		}
+////		translate(focusTar.x,focusTar.y,focusTar.z);				//center of screen		
+////		if (cyclModCmp) {	
+////			background(bground[0],bground[1],bground[2],bground[3]);	
+//			pushMatrix();pushStyle();
+//			translate(-gridDimX/2.0f,-gridDimY/2.0f,-gridDimZ/2.0f);				//center of screen		
+//			slvrs[curSlvrIDX].draw3DCPU_Res();
+//			popStyle();popMatrix();
+//			drawAxes(100,3, new myPoint(-viewDimW/2.0f+40,0.0f,0.0f), 200, false); 		//for visualisation purposes and to show movement and location in otherwise empty scene
+//		//}
+//		//c.buildCanvas();																//build drawing canvas based upon eye-to-scene vector
+//		drawBoxBnds();
+////		popStyle();popMatrix(); 
+//	}//draw3D	
 	
 	
 	//end for cpu calcuations
@@ -190,7 +214,7 @@ public class Project4 extends PApplet {
 //		if (cyclModCmp) {	
 //			background(bground[0],bground[1],bground[2],bground[3]);	
 //			pushMatrix();pushStyle();
-//			translate(-grid3DDimX/2.0f,-grid3DDimY/2.0f,-grid3DDimZ/2.0f);				//center of screen		
+//			translate(-gridDimX/2.0f,-gridDimY/2.0f,-gridDimZ/2.0f);				//center of screen		
 //			//draw results of shader-based sim			
 //			slvrs[curSlvrIDX].draw3DShdrVisRes();			
 //			popStyle();popMatrix();
@@ -210,7 +234,7 @@ public class Project4 extends PApplet {
 	}//drawUI	
 
 	public myPoint bndClkInBox2D(myPoint p){p.set(max(0,min(p.x,grid2D_X)),max(0,min(p.y,grid2D_Y)),0);return p;}
-	public myPoint bndClkInBox3D(myPoint p){p.set(max(0,min(p.x,grid3DDimX)), max(0,min(p.y,grid3DDimY)),max(0,min(p.z,grid3DDimZ)));return p;}	
+	public myPoint bndClkInBox3D(myPoint p){p.set(max(0,min(p.x,gridDimX)), max(0,min(p.y,gridDimY)),max(0,min(p.z,gridDimZ)));return p;}	
 	
 	//launch solver from user input setting prob value to be some preset
 	public void launchSolver(int typ, int presetIdx){	
@@ -368,7 +392,11 @@ public class Project4 extends PApplet {
 		case gIDX_RndWlkTail :{
 			((myDLASolver)slvrs[DLAslv]).resetTrailLength(guiObjs[gIDX_RndWlkTail].valAsInt());
 			break;}
-		}		
+			
+		case gIDX_isoLvl : {
+			((myDLASolver)slvrs[DLAslv]).setIsoLevel(guiObjs[gIDX_isoLvl].getVal());
+			break;}
+		}
 	}
 	
 	//////////////////////////////////////////
@@ -376,11 +404,11 @@ public class Project4 extends PApplet {
 	//////////////////////////////////////////
 	//display-related size variables
 	public final int grid2D_X=500, grid2D_Y=500;	
-	public final int grid3DDimX = 500, grid3DDimY = 500, grid3DDimZ = 500;				//dimensions of 3d region in pxls
+	public final int gridDimX = 500, gridDimY = 500, gridDimZ = 500;				//dimensions of 3d region in pxls
 
 	public myVector[] focusVals = new myVector[]{						//set these values to be different targets of focus
 		new myVector(-grid2D_X/2,-grid2D_Y/1.75f,0),
-		new myVector(0,0,grid3DDimZ/3.0f)
+		new myVector(0,0,gridDimZ/3.0f)
 	};
 	
 	//static variables - put obj constructor counters here
@@ -412,8 +440,9 @@ public class Project4 extends PApplet {
 	//solver-specific - shaders
 	public final int useShader			= 13;			//use shader for this calculation, or use cpu processing
 	public final int solve3D			= 14;			//whether to run the 3D solver
+	public final int useMCDisp			= 15; 			//show 3d results via marching cubes
 
-	public final int numFlags = 15;
+	public final int numFlags = 16;
 	
 	public boolean showInfo;										//whether or not to show start up instructions for code
 	
@@ -438,7 +467,8 @@ public class Project4 extends PApplet {
 			"Show DLA Walker Trails",
 			"Run DBM Algorithm",
 			"Use Shader To Solve",
-			"Change back to 2D"
+			"Change back to 2D",
+			"Using M.Cubes to disp 3D"
 			};
 	
 	public final String[] falseFlagNames = {//needs to be in order of flags
@@ -456,13 +486,14 @@ public class Project4 extends PApplet {
 			"Show DLA Walker Trails",
 			"Run DBM Algorithm",
 			"Use CPU To Solve",
-			"Change to 3D"
+			"Change to 3D",
+			"Using Cells to disp 3D"
 			};	
 	
 	public int[][] flagColors;
 	//flags that can be modified by clicking on screen - order doesn't matter
 	public List<Integer> clkyFlgs = Arrays.asList(
-			debugMode, saveAnim,runSim,singleStep, showAdjZone, showWalkers,useDLAslv,drawSeedTmp, showDLATrails, useDBMslv, solve3D		
+			debugMode, saveAnim,runSim,singleStep, showAdjZone, showWalkers,useDLAslv,drawSeedTmp, showDLATrails, useDBMslv, solve3D,useMCDisp		
 			);			
 	float xOff = 20 , yOff = 20;			//offset values to render boolean menu on side of screen	
 	public final float minClkX = 17;
@@ -511,7 +542,7 @@ public class Project4 extends PApplet {
 	
 	public myVector[] cameraInitLocs = new myVector[]{						//set these values to be different initial camera locations based on 2d or 3d
 			new myVector(camInitRx,camInitRy,camInitialDist),
-			new myVector(-0.47f,-0.61f,-grid3DDimZ*.5f)			
+			new myVector(-0.47f,-0.61f,-gridDimZ*.5f)			
 		};
 
 	public final int viewDim = 900;
@@ -611,6 +642,7 @@ public class Project4 extends PApplet {
 	
 	//address all flag-setting here, so that if any special cases need to be addressed they can be
 	public void setFlags(int idx, boolean val ){
+		boolean oldVal = flags[idx];
 		flags[idx] = val;
 		switch (idx){
 			case debugMode 			: {  break;}//anything special for debugMode 			
@@ -653,7 +685,7 @@ public class Project4 extends PApplet {
 				break;}//anything special for using dla solver - set useDBMslv as !val 	
 			case useDBMslv			: {  
 				if(val){//don't call setFlags on true - infinite loop
-					flags[useDLAslv] = false;	flags[showWalkers] = false;		flags[showDLATrails] = false;
+					flags[useDLAslv] = false;	flags[showWalkers] = false;		flags[showDLATrails] = false; flags[useMCDisp] = false;
 					curSlvrIDX = DBMslv;
 					guiObjs[curSlvrIDX + slvrProbOffset].val = probPresets[curSlvrIDX][1];				//idx 1  has decent starting value
 					slvrs[curSlvrIDX].initSolver();
@@ -663,6 +695,14 @@ public class Project4 extends PApplet {
 			case useShader 			: {//whether we are using cpu calculations or shader to solve for the algorithm
 
 				break;}	
+			case useMCDisp 			: {//whether or not we are using marching cubes to display 3d results
+				if(val){
+//					flags[solve3D] = true;
+//					setCamView(); 
+//					setFlags(useDLAslv,true);
+					
+				}
+				break;}
 		}
 	}//setFlags  
 	public void clearFlags(int[] idxs){		for(int idx : idxs){flags[idx]=false;}	}	
@@ -689,7 +729,7 @@ public class Project4 extends PApplet {
 		strokeWeight(3f);
 		noFill();
 		setColorValStroke(gui_TransGray);
-		box(grid3DDimX,grid3DDimY,grid3DDimZ);
+		box(gridDimX,gridDimY,gridDimZ);
 		popStyle();		
 	}		
 	//give a black outline to text displayed in graphics area
@@ -899,9 +939,9 @@ public class Project4 extends PApplet {
 	//project passed point onto box surface based on location - to help visualize the location in 3d
 	public void drawProjOnBox(myPoint p, int[] clr){
 		if(clr.length < 6){clr =  new int[]{gui_Black,gui_Black,gui_Black,gui_Black,gui_Black,gui_Black};}
-		show(new myPoint((float)-p.x-grid3DDimX/2.0f,0, 0),5, clr[0]);		show(new myPoint((float)-p.x+grid3DDimX/2.0f,0, 0),5, clr[1]);
-		show(new myPoint(0,(float)-p.y-grid3DDimY/2.0f, 0),5, clr[2]);		show(new myPoint(0,(float)-p.y+grid3DDimY/2.0f, 0),5, clr[3]);
-		show(new myPoint(0,0, (float)-p.z-grid3DDimZ/2.0f),5, clr[4]);		show(new myPoint(0,0, (float)-p.z+grid3DDimZ/2.0f),5, clr[5]);
+		show(new myPoint((float)-p.x-gridDimX/2.0f,0, 0),5, clr[0]);		show(new myPoint((float)-p.x+gridDimX/2.0f,0, 0),5, clr[1]);
+		show(new myPoint(0,(float)-p.y-gridDimY/2.0f, 0),5, clr[2]);		show(new myPoint(0,(float)-p.y+gridDimY/2.0f, 0),5, clr[3]);
+		show(new myPoint(0,0, (float)-p.z-gridDimZ/2.0f),5, clr[4]);		show(new myPoint(0,0, (float)-p.z+gridDimZ/2.0f),5, clr[5]);
 	}//drawProjOnBox
 	public void drawProjOnBox(myPoint p){drawProjOnBox(p, new int[]{gui_Black,gui_Black,gui_Black,gui_Black,gui_Black,gui_Black});}	
 	 

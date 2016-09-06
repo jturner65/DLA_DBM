@@ -3,9 +3,7 @@ package cs7492Project4;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.*;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -15,7 +13,7 @@ import processing.core.*;
 import processing.opengl.*;
 
 public abstract class mySolver {
-	public Project4 p;
+	public cs7492Proj4 p;
 	// structure holding cells in grid
 	public myCellGrid cellGrid;	
 	
@@ -37,13 +35,12 @@ public abstract class mySolver {
 	
 	public final int numFlags = 1;								
 
-	public mySolver(Project4 _p, int _type) {
+	public mySolver(cs7492Proj4 _p, int _type) {
 		p=_p;
 		type = _type;
 		probType = (type == p.DLAslv ? "Stickiness" : "Eta");
 		cell2dSize = p.c2sz[type];
 		cell3dSize =  p.c3sz[type];
-
 	}	
 	//initialized only upon creation
 	public void initSolverOnce(){
@@ -60,9 +57,9 @@ public abstract class mySolver {
 		setProbParam();	//get current probability value from UI
 		if(p.flags[p.solve3D]){
 			cellSize = cell3dSize;
-			gridCellW = (p.grid3DDimX / (cell3dSize));
-			gridCellH = (p.grid3DDimY / (cell3dSize));
-			gridCellDp = (p.grid3DDimZ / (cell3dSize));
+			gridCellW = (p.gridDimX / (cell3dSize));
+			gridCellH = (p.gridDimY / (cell3dSize));
+			gridCellDp = (p.gridDimZ / (cell3dSize));
 			cellGrid = new myCellGrid(p, this, gridCellW, gridCellH, gridCellDp);
 			cellGrid.initSingleSeed3D();
 		} else {
@@ -114,6 +111,7 @@ public abstract class mySolver {
 			(a.x > gridCellW ) || (a.y  > gridCellH) || (a.z > gridCellDp));
 	}
   
+	public abstract void setMCVal(int idx, float val);
     
 	//abstract functions
     public abstract String getProbStr();

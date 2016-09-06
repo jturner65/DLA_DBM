@@ -4,7 +4,7 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 
 public class myCell {
-	public Project4 p;	
+	public cs7492Proj4 p;	
 	public mySolver slv;
 	public final int idx, x, y, z,cellSize,			//idx, x and y position in cell grid
 				offX, offY, offZ;			//pixel offset in x and y for upper left corner
@@ -25,7 +25,7 @@ public class myCell {
 				prob,							//prob of landing in this cell
 				Phi_eta;						//Cap Phi for this cell raised to eta
 	
-	public myCell(Project4 _p, mySolver _rs, int _idx, int _x, int _y, int _z){
+	public myCell(cs7492Proj4 _p, mySolver _rs, int _idx, int _x, int _y, int _z){
 		p = _p;
 		slv = _rs;
 		idx = _idx;

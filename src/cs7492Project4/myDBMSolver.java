@@ -12,7 +12,7 @@ public class myDBMSolver extends mySolver {
 	public float minPhi, maxPhi;
 	ConcurrentSkipListMap<Float, myCell> probListCells;
 	
-	public myDBMSolver(Project4 _p, int type) {
+	public myDBMSolver(cs7492Proj4 _p, int type) {
 		super(_p, type);	
 	}
 	
@@ -53,7 +53,10 @@ public class myDBMSolver extends mySolver {
 		}	
 	}
 	
-	
+	//TODO support marching cubes to display dbm results
+	public void setMCVal(int idx, float val){
+	}
+
 	//calculate the potential at all cells in passed construct, by finding distance from every fixed cell in existing substrate and using eq1 to derive potential
 	public void updateCellPotentialEq1(ArrayList<Integer> newCells){
 		for(int i = 0; i < newCells.size(); ++i){

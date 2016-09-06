@@ -1,12 +1,7 @@
 package cs7492Project4;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.*;
+import java.util.concurrent.*;
 
 import processing.core.PApplet;
 
@@ -16,11 +11,13 @@ public class myDLASolver extends mySolver {
 	public int numWalkers = 1000;
 	
 	public myWalker[] walkerIDXs;		//current idx's in cellgrid holding a walker
-	
+		
 	public final int mtFrameSize = 100;			//# of walkers to send to each thread
+	public myMarchingCubes MC;											//to render 3d results using marchingcubes alg
 
-	public myDLASolver(Project4 _p, int type) {
+	public myDLASolver(cs7492Proj4 _p, int type) {
 		super(_p, type);	
+		MC = new myMarchingCubes(p, cell3dSize);
 	}
 
 	@Override
@@ -28,8 +25,13 @@ public class myDLASolver extends mySolver {
 		numWalkers =  (p.flags[p.solve3D] ? 2000 : 1000);
 		walkerIDXs = new myWalker[numWalkers];	
 		for(int i =0; i<numWalkers; ++i){walkerIDXs[i] = makeNewRandLocWalker();}
-	}	
-
+		MC.initData();
+	}
+	@Override
+	//set values to be used by MC to display results
+	public void setMCVal(int idx, float val){
+		MC.updateCellData(idx, val);
+	}
 	@Override
 	public void calcCPU(){	
 		setProbParam();	//get current probability value from UI
@@ -62,15 +64,23 @@ public class myDLASolver extends mySolver {
 	}
 	
 	public void draw3DCPU_Res(){
-		super.draw3DCPU_Res();
-		if(p.flags[p.showWalkers]){	
-			p.pushMatrix();
-			for(int i = 0; i< walkerIDXs.length; ++i){walkerIDXs[i].drawMe3D();}//   cellGrid.cellMap[walkerIDXs[i]].draw2DTrail(new int[]{255,255,0,255});}
-			p.popMatrix();
+		if(p.flags[p.useMCDisp]){	
+			p.pushMatrix();p.pushStyle();
+			MC.updateMTGrid();
+			MC.draw();
+			p.popStyle();p.popMatrix();			
+		} else {
+			super.draw3DCPU_Res();
+			if(p.flags[p.showWalkers]){	
+				p.pushMatrix();
+				for(int i = 0; i< walkerIDXs.length; ++i){walkerIDXs[i].drawMe3D();}//   cellGrid.cellMap[walkerIDXs[i]].draw2DTrail(new int[]{255,255,0,255});}
+				p.popMatrix();
+			}
 		}
 	}
 	//length of trails for walkers
 	public void resetTrailLength(int trLen){for(int t = 0; t< walkerIDXs.length; ++t){walkerIDXs[t].resetTrail(trLen);}}
+	public void setIsoLevel(double _isoLvl){MC.isolevel = ((float)_isoLvl);}// p.outStr2Scr("Iso Level " + MC.isolevel);}
 	public myWalker makeNewWalker(){return new myWalker(p,cellGrid, cellGrid.frontier.get(ThreadLocalRandom.current().nextInt(cellGrid.frontier.size())), p.guiObjs[p.gIDX_RndWlkTail].valAsInt());}	
 	public myWalker makeNewRandLocWalker(){return new myWalker(p,cellGrid,ThreadLocalRandom.current().nextInt(cellGrid.cellMap.length),p.guiObjs[p.gIDX_RndWlkTail].valAsInt());}	
 	@Override
@@ -90,12 +100,12 @@ public class myDLASolver extends mySolver {
 }
 
 class myWalker{
-	public Project4 p;
+	public cs7492Proj4 p;
 	public myCellGrid cellGrid;
 	public int idx, trLen;
 	public int[] trail;
 	public boolean drawTail;
-	public myWalker(Project4 _p, myCellGrid _cellGrid, int _idx, int _trLen){ 
+	public myWalker(cs7492Proj4 _p, myCellGrid _cellGrid, int _idx, int _trLen){ 
 		p = _p; cellGrid = _cellGrid; idx = _idx; trLen = _trLen;
 		trail = new int[trLen];
 		Arrays.fill(trail, idx);		

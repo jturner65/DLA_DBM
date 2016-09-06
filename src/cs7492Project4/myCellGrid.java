@@ -10,7 +10,7 @@ import processing.core.PApplet;
  * @author john
  */
 public class myCellGrid {
-	public Project4 p;	
+	public cs7492Proj4 p;	
 	public mySolver rs;
 	public final int gridWidth, gridHeight, gridDepth, gwgh, cellSize;
 	public int ctrIdx;
@@ -22,12 +22,12 @@ public class myCellGrid {
 	
 	public ConcurrentSkipListMap<Integer,myCell> fixedCells;			//cells that are fixed as substrate/potential = key is idx in cellgrid, and ref to cell	
 	public ConcurrentSkipListMap<Integer,myCell> adjFixedCells;			//cells that are next to the cells that are fixed	
-
+		
 	public myCell[] cellMap;
 	
 	public int numVals;
 	
-	public myCellGrid(Project4 _p4, mySolver _rs, int _x, int _y, int _z){
+	public myCellGrid(cs7492Proj4 _p4, mySolver _rs, int _x, int _y, int _z){
 		p = _p4;
 		rs = _rs;
 		gridWidth = _x;
@@ -62,19 +62,20 @@ public class myCellGrid {
 		p.setColorValFill(p.gui_Black);
 		p.rect(0, 0, gridWidth*2, gridHeight*2);
 		for(Integer x : fixedCells.keySet()){									cellMap[x].draw2D();		}//draw each cell->black for unoccupied, white for substrate		
-		if(p.flags[p.showAdjZone]){	for(Integer x : adjFixedCells.keySet()){	cellMap[x].draw2D(Project4.gui_Magenta);}}//draw adj cell, if appropriate
-		for(int x=0;x<frontier.size();++x){										cellMap[frontier.get(x)].draw2D(Project4.gui_Green);}
+		if(p.flags[p.showAdjZone]){	for(Integer x : adjFixedCells.keySet()){	cellMap[x].draw2D(cs7492Proj4.gui_Magenta);}}//draw adj cell, if appropriate
+		for(int x=0;x<frontier.size();++x){										cellMap[frontier.get(x)].draw2D(cs7492Proj4.gui_Green);}
 		p.popMatrix();
 	}
 	
 	
 	public void drawMe3D(){
 		p.pushMatrix();
-		for(Integer x : fixedCells.keySet()){										cellMap[x].draw3D(Project4.gui_TransBlue);		}//draw each cell->black for unoccupied, white for substrate		
-		if(p.flags[p.showAdjZone]){	for(Integer x : adjFixedCells.keySet()){	cellMap[x].draw3D(Project4.gui_Magenta);}}//draw adj cell, if appropriate
+		for(Integer x : fixedCells.keySet()){									cellMap[x].draw3D(cs7492Proj4.gui_TransBlue);		}		
+		if(p.flags[p.showAdjZone]){	for(Integer x : adjFixedCells.keySet()){	cellMap[x].draw3D(cs7492Proj4.gui_Magenta);}}
 	//	for(int x=0;x<frontier.size();++x){										cellMap[frontier.get(x)].draw3D(Project4.gui_Green);}
 		p.popMatrix();
 	}
+	
 		
 	//gridWidth, gridHeight, gridDepth, gwgh;
 	public void initBaseFrontier(){
@@ -99,7 +100,7 @@ public class myCellGrid {
 		int x = cellMap[idx].x,y = cellMap[idx].y,tmpIdx;
 		for(int i = -1; i<2; ++i){
 			for(int j = -1; j<2; ++j){
-				if((i==0)&&(j==0)){continue;}
+				if((i==0)&&(j==0)){continue;}			//same cell
 				tmpIdx = idx(x+i, y+j);
 				if(cellMap[tmpIdx].setAdj()){
 					adjFixedCells.put(tmpIdx, cellMap[tmpIdx]);
@@ -132,6 +133,7 @@ public class myCellGrid {
 					if((i==0)&&(j==0)&&(k==0)){continue;}
 					tmpIdx = idx(x+i, y+j, z+k);
 					if(cellMap[tmpIdx].setAdj()){
+						if((i==0)||(j==0)||(k==0)){rs.setMCVal(tmpIdx, .25f);	}	
 						adjFixedCells.put(tmpIdx, cellMap[tmpIdx]);
 					}
 				}
@@ -189,6 +191,7 @@ public class myCellGrid {
 		fixedCells.put(idx, cellMap[idx]);		
 		synchronized(this) {		//only allow this to be accessed synchronously
 			setCellAdj3D(idx);	
+			rs.setMCVal(idx, 1.0f);			
 		}
 		this.adjFixedCells.remove(idx);
 	}
