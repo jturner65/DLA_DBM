@@ -100,30 +100,11 @@ public class myMarchingCubes {
 	}
 	//idxing into 3d grid should be for z -> for y -> for x (inner)
 	public int IX(int x, int y, int z){return (x + (y * gy) + (z * gxgy));}
-//	public void copyColorAraToData(int[] clrPxl){
-//		int idx = 0, j_kgxgy;
-//		//using calcuating from shader - not necessary here
-////		isolevel =  p.flags[p.dispChemU] ?  p.guiObjs[p.gIDX_isoLvl].valAsFloat() : 1.0f - p.guiObjs[p.gIDX_isoLvl].valAsFloat();
-////		myMCCalcThreads.disp = (p.flags[p.dispChemU]) ? 16 : 8;
-//		for (int j = 0; j < gy; ++j){for (int k = 0; k < numCubes; k+=gxgy){j_kgxgy = j + k; for (int i = 0; i < gx; ++i)  {
-//			intData[j_kgxgy]= clrPxl[idx++];
-//			j_kgxgy+=gx;
-//		}}}			
-//
-//		int callIdx = 0;
-//		//build threads to calc data
-//		//myMCCalcThreads.isolevel = isolevel;			//TODO use probability to display
-//		for (int k = 0; k < gz - 1; ++k) {
-//			callMCCalcs.get(callIdx++).updateGrid(intData);		//each thread processes a slice of the result
-//		}
-//		try {callMCCalcFutures = p.th_exec.invokeAll(callMCCalcs);for(Future<Boolean> f: callMCCalcFutures) { f.get(); }} catch (Exception e) { e.printStackTrace(); }
-//	}
 	//set cell data value
 	public void updateCellData(int idx, float val){
 		//intData[idx] = val;		
 		data[idx] += val;		
-	}
-	
+	}	
 	
 	//call to update grid calc threads with current cell data
 	public void updateMTGrid(){
@@ -134,7 +115,6 @@ public class myMarchingCubes {
 		}
 		try {callMCCalcFutures = p.th_exec.invokeAll(callMCCalcs);for(Future<Boolean> f: callMCCalcFutures) { f.get(); }} catch (Exception e) { e.printStackTrace(); }
 	}
-	
 	
 	public Iterator<myMCTri> i;
 	public myMCTri t;

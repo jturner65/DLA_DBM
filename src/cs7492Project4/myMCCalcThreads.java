@@ -25,11 +25,13 @@ public class myMCCalcThreads implements Callable<Boolean> {
 	//public int[] intData;
 	
 	public ArrayList<myMCTri> triList;
+	//public ArrayList<myMCTri>[][] triList;
 	
 	public myMCCalcThreads(myMarchingCubes _MC, myMCCube[] _grid, int _stIdx, int _edIdx, int _gridK, int _gxM1, int _gyM1){
 		MC = _MC;
 		grid = _grid;
 		triList = new ArrayList<myMCTri>();
+		//triList = new ArrayList[_gxM1 + 1][_gyM1 + 1];
 		gridK = _gridK;
 		endI = _gxM1;
 		endJ = _gyM1;
@@ -83,7 +85,6 @@ public class myMCCalcThreads implements Callable<Boolean> {
 			}}
 		// Create the triangle
 
-		//int araIDX = cubeIDX*16;
 		int araIDX = cubeIDX << 4;
 		for (int i = 0; triAra[araIDX + i] != -1; i += 3) {	
 			triList.add(new myMCTri(new myPoint[]{ vertList[triAra[araIDX + i]], vertList[triAra[araIDX + i + 1]],	vertList[triAra[araIDX + i + 2]]},new myVector(gridI,  gridJ,  gridK))); 

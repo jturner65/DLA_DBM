@@ -15,6 +15,8 @@ public class myCellGrid {
 	public final int gridWidth, gridHeight, gridDepth, gwgh, cellSize;
 	public int ctrIdx;
 	public float cellRad;
+	
+	public static final float MCcellValIncr = .1f;
 
 	public ArrayList<Integer> frontier;				//legitimate idx's for walkers to start	
 	
@@ -133,7 +135,7 @@ public class myCellGrid {
 					if((i==0)&&(j==0)&&(k==0)){continue;}
 					tmpIdx = idx(x+i, y+j, z+k);
 					if(cellMap[tmpIdx].setAdj()){
-						if((i==0)||(j==0)||(k==0)){rs.setMCVal(tmpIdx, .25f);	}	
+						if((i==0)||(j==0)||(k==0)){rs.setMCVal(tmpIdx, MCcellValIncr);	}	
 						adjFixedCells.put(tmpIdx, cellMap[tmpIdx]);
 					}
 				}
