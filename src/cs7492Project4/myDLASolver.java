@@ -8,7 +8,7 @@ import processing.core.PApplet;
 
 public class myDLASolver extends mySolver {
 	
-	public int numWalkers = 1000;
+	public int numWalkers = 12;
 	
 	public myWalker[] walkerIDXs;		//current idx's in cellgrid holding a walker
 		
@@ -46,10 +46,8 @@ public class myDLASolver extends mySolver {
 		}							//find next turn's motion for every creature by finding total force to act on creature
 		try {
 			callMTFutures = p.th_exec.invokeAll(callMTCalcs);
-			for(Future<Boolean> f: callMTFutures) { 
-				boolean res;
-				res = f.get(); 
-			}
+			for(Future<Boolean> f: callMTFutures) {//boolean res = 
+					f.get(); 	}
 		} catch (Exception e) { e.printStackTrace(); }		
 
 	}

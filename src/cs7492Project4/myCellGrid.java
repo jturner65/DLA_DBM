@@ -132,10 +132,10 @@ public class myCellGrid {
 		for(int i = -1; i<2; ++i){
 			for(int j = -1; j<2; ++j){
 				for(int k = -1; k<2; ++k){
-					if((i==0)&&(j==0)&&(k==0)){continue;}
+					if(((i==0)&&(j==0)&&(k==0)) || ((i!=0)&&(j!=0)&&(k!=0))){continue;}
 					tmpIdx = idx(x+i, y+j, z+k);
 					if(cellMap[tmpIdx].setAdj()){
-						if((i==0)||(j==0)||(k==0)){rs.setMCVal(tmpIdx, MCcellValIncr);	}	
+						rs.setMCVal(tmpIdx, MCcellValIncr);		
 						adjFixedCells.put(tmpIdx, cellMap[tmpIdx]);
 					}
 				}
