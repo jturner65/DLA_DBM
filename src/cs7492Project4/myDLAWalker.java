@@ -32,18 +32,6 @@ public class myDLAWalker implements Callable<Boolean> {
 	//get 1-d idx from 2d or 3d idxs
 	public int idx(int col, int row, int layer){return ((col + row*gridWidth + (layer*gwgh)+cellMapLen)%cellMapLen);}
 	
-	//return idx in cellgrid of new location for given initial loc idx and direction dir :
-	//dir is >0 for increase, <0 for decrease
-	//axis is 1 for x, 2 for y, 3 for z 
-	public int modLoc3D(int idxVal, int dir, int axis){
-		int x = idxVal % gridWidth, y = (idxVal/gridWidth) % gridHeight, z = (idxVal/gwgh)%gridDepth;
-		switch(axis){
-		case 0 : {return idx((x + dir + gridWidth)%gridWidth, y,z);}
-		case 1 : {return idx(x, (y + dir + gridHeight)%gridHeight,z);}
-		case 2 : {return idx(x, y, (z + dir + gridDepth)%gridDepth);}
-		default : {return idxVal;}
-		}
-	}
 	public void run2D(){
 		int newIdx, randVal;
 		//for each walker
@@ -56,7 +44,8 @@ public class myDLAWalker implements Callable<Boolean> {
 						cellGrid.cellMap[newIdx].setOcc();
 						cellGrid.setCellOcc2D(newIdx);
 						resetWalker(walkerIDXs[i]);
-						if(cellGrid.frontier.contains(newIdx)){	p.setFlags(p.runSim,false); }//return;}			//stop when we hit frontier
+						if(null != cellGrid.frontierCells.get(newIdx)){	p.setFlags(p.runSim,false); }//return;}			//stop when we hit frontier
+						//if(cellGrid.frontier.contains(newIdx)){	p.setFlags(p.runSim,false); }//return;}			//stop when we hit frontier
 					} else {
 						walkerIDXs[i].setNewLocAndTrailHead(newIdx);  
 					}					
@@ -65,21 +54,36 @@ public class myDLAWalker implements Callable<Boolean> {
 			}
 		}
 	}	
+		
+	//return idx in cellgrid of new location for given initial loc idx and direction dir :
+	//dir is >0 for increase, <0 for decrease
+	//axis is 1 for x, 2 for y, 3 for z 
+	public int modLoc3D(int idxVal, int dir, int axis){
+		int x = idxVal % gridWidth, y = (idxVal/gridWidth) % gridHeight, z = (idxVal/gwgh)%gridDepth;
+		switch(axis){
+		case 0 : {return idx((x + dir + gridWidth)%gridWidth, y,z);}
+		case 1 : {return idx(x, (y + dir + gridHeight)%gridHeight,z);}
+		case 2 : {return idx(x, y, (z + dir + gridDepth)%gridDepth);}
+		default : {return idxVal;}
+		}
+	}
+	
 	public void run3D(){
 		int newIdx, randVal;
 		//for each walker 
-		int tIters = iters/10;
+		int tIters = iters;///10;
 		for(int iter = 0; iter<tIters; ++iter){//run iters times per frame
 			for(int i =0; i<walkerIDXs.length; ++i){
-				randVal = ThreadLocalRandom.current().nextInt(24); //rand3 = ThreadLocalRandom.current().nextInt(3);		//maybe replace with nextInt(24) to use only 1 random gen
-				newIdx = modLoc3D(walkerIDXs[i].idx, ((randVal & 4) == 4 ? 1 : -1), (randVal/8));          			//random walk : new_idx = modLoc2D(oldIdx, dir(+/- 1), axis(1,2)){
+				randVal = ThreadLocalRandom.current().nextInt(24); 
+				newIdx = modLoc3D(walkerIDXs[i].idx, ((randVal & 4) == 4 ? 1 : -1), (randVal/8));//use random value to get u
 				//System.out.println("randval:"+randVal+" +/- :"+((randVal & 4) == 4 ?"+" : "-") +"" +(randVal%3));				
 				if((cellGrid.adjFixedCells.containsKey(newIdx)) || (cellGrid.fixedCells.containsKey(newIdx))){
 					if(ThreadLocalRandom.current().nextDouble(1.0) < stick){//setting cell occ
 						cellGrid.cellMap[newIdx].setOcc();
 						cellGrid.setCellOcc3D(newIdx);
 						resetWalker(walkerIDXs[i]);
-						if(cellGrid.frontier.contains(newIdx)){	p.setFlags(p.runSim,false); }//return;}			//stop when we hit frontier
+						if(null != cellGrid.frontierCells.get(newIdx)){	p.setFlags(p.runSim,false); }//return;}			//stop when we hit frontier
+						//if(cellGrid.frontier.contains(newIdx)){	p.setFlags(p.runSim,false); }//return;}			//stop when we hit frontier
 					} else {
 						walkerIDXs[i].setNewLocAndTrailHead(newIdx);  
 					}					

@@ -20,6 +20,8 @@ public class myCellGrid {
 
 	public ArrayList<Integer> frontier;				//legitimate idx's for walkers to start	
 	
+	public ConcurrentSkipListMap<Integer,myCell> frontierCells;		//structure holding frontier values - to check frontier via key lookup is faster than using contains
+	
 	public float phiMin, phiMax;					//global min/max charges	
 	
 	public ConcurrentSkipListMap<Integer,myCell> fixedCells;			//cells that are fixed as substrate/potential = key is idx in cellgrid, and ref to cell	
@@ -65,7 +67,7 @@ public class myCellGrid {
 		p.rect(0, 0, gridWidth*2, gridHeight*2);
 		for(Integer x : fixedCells.keySet()){									cellMap[x].draw2D();		}//draw each cell->black for unoccupied, white for substrate		
 		if(p.flags[p.showAdjZone]){	for(Integer x : adjFixedCells.keySet()){	cellMap[x].draw2D(cs7492Proj4.gui_Magenta);}}//draw adj cell, if appropriate
-		for(int x=0;x<frontier.size();++x){										cellMap[frontier.get(x)].draw2D(cs7492Proj4.gui_Green);}
+		for(myCell c : frontierCells.values()){									c.draw2D(cs7492Proj4.gui_Green);}
 		p.popMatrix();
 	}
 	
@@ -83,19 +85,31 @@ public class myCellGrid {
 	public void initBaseFrontier(){
 		int frontierSize = ((2*gridWidth) + (2*(gridHeight-2))) * gridDepth;
 		frontier = new ArrayList<Integer>(frontierSize);
+		frontierCells = new ConcurrentSkipListMap<Integer,myCell>();
+		int key1, key2;
 		for(int z = 0; z < gridDepth; ++z){//each layer in z
 			int zOffset = z * gwgh;
 			for(int i =0; i<gridWidth; ++i){//each edge across x
+				key1 = i + zOffset;
+				key2 = gwgh - 1 - i + zOffset;
 				frontier.add(i + zOffset);
-				frontier.add(gwgh - 1 - i + zOffset);		
+				frontier.add(gwgh - 1 - i + zOffset);	
+				frontierCells.put(key1, cellMap[key1]);
+				frontierCells.put(key2, cellMap[key2]);				
 			}
 			for(int i=1; i<gridHeight-1; ++i){//each edge across y
 				int val = i*gridWidth;
+				key1 = val + zOffset;
+				key2 = val + gridWidth -1 +zOffset;
 				frontier.add(val + zOffset);
 				frontier.add(val + gridWidth -1 +zOffset);			
+				frontierCells.put(key1, cellMap[key1]);
+				frontierCells.put(key2, cellMap[key2]);				
 			}
 		}
-		for(int i =0; i<frontierSize; ++i){cellMap[frontier.get(i)].setFrontier();}
+		//for(int i =0; i<frontierSize; ++i){cellMap[frontier.get(i)].setFrontier();}
+		for(myCell c : frontierCells.values()){c.setFrontier();}
+
 	}
 
 	public void setCellAdj2D(int idx){
@@ -129,11 +143,11 @@ public class myCellGrid {
 	
 	public void setCellAdj3D(int idx){
 		int x = cellMap[idx].x,y = cellMap[idx].y,z = cellMap[idx].z,tmpIdx;
-		for(int i = -1; i<2; ++i){
-			for(int j = -1; j<2; ++j){
-				for(int k = -1; k<2; ++k){
-					if(((i==0)&&(j==0)&&(k==0)) || ((i!=0)&&(j!=0)&&(k!=0))){continue;}
-					tmpIdx = idx(x+i, y+j, z+k);
+		for(int i = x-1; i<x+2; ++i){
+			for(int j = y-1; j<y+2; ++j){
+				for(int k = z-1; k<z+2; ++k){
+					if(((i==x)&&(j==y)&&(k==j)) || ((i!=x)&&(j!=y)&&(k!=z))){continue;}
+					tmpIdx = idx(i,j,k);
 					if(cellMap[tmpIdx].setAdj()){
 						rs.setMCVal(tmpIdx, MCcellValIncr);		
 						adjFixedCells.put(tmpIdx, cellMap[tmpIdx]);
