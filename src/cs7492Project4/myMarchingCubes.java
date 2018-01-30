@@ -90,7 +90,6 @@ public class myMarchingCubes {
 					idx++;
 				}
 			}
-			//callMCCalcs.add(new myMCCalcThreads(this, grid, stIdx, endIdx, isolevel, k, gx - 1, gy - 1));	//process 2d grid for each thread
 			callMCCalcs.add(new myMCCalcThreads(this, grid, stIdx, endIdx, k, gx - 1, gy - 1));	//process 2d grid for each thread
 		}
 	}
@@ -108,10 +107,10 @@ public class myMarchingCubes {
 	
 	//call to update grid calc threads with current cell data
 	public void updateMTGrid(){
-		int callIdx = 0;
+		//int callIdx = 0;
 		myMCCalcThreads.isolevel = isolevel;
 		for (int k = 0; k < gz - 1; ++k) {
-			callMCCalcs.get(callIdx++).updateGrid(data);		//each thread processes a slice of the result
+			callMCCalcs.get(k).updateGrid(data);		//each thread processes a slice of the result
 		}
 		try {callMCCalcFutures = p.th_exec.invokeAll(callMCCalcs);for(Future<Boolean> f: callMCCalcFutures) { f.get(); }} catch (Exception e) { e.printStackTrace(); }
 	}
